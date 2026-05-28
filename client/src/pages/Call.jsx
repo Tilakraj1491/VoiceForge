@@ -1,6 +1,6 @@
 // Renders the main call workspace for webcam preview, typed speech, output video, and virtual camera controls.
 import React from "react";
-import { Camera, CircleAlert } from "lucide-react";
+import { Camera, CircleAlert, Sliders, ChevronDown, RotateCcw } from "lucide-react";
 import TextToSpeech from "../components/TextToSpeech.jsx";
 import VideoPreview from "../components/VideoPreview.jsx";
 import VirtualCamera from "../components/VirtualCamera.jsx";
@@ -17,6 +17,47 @@ export default function Call() {
   const activeProfile = getActiveVoiceProfile();
   const { speak, status, error, audioUrl } = useTTS();
   const virtualCamera = useVirtualCamera(canvasRef);
+
+  const [isCalibrationOpen, setIsCalibrationOpen] = React.useState(false);
+  const [calibration, setCalibration] = React.useState(() => {
+  try {
+    const savedX     = localStorage.getItem("voiceforge:calibrationXOffset");
+    const savedY     = localStorage.getItem("voiceforge:calibrationYOffset");
+    const savedScale = localStorage.getItem("voiceforge:calibrationScale");
+    const xOffset    = savedX     !== null ? parseInt(savedX, 10)    : 0;
+    const yOffset    = savedY     !== null ? parseInt(savedY, 10)    : 0;
+    const scale      = savedScale !== null ? parseFloat(savedScale)  : 1.0;
+    return {
+      xOffset: isNaN(xOffset) ? 0    : xOffset,
+      yOffset: isNaN(yOffset) ? 0    : yOffset,
+      scale:   isNaN(scale)   ? 1.0  : scale,
+    };
+  } catch {
+    return { xOffset: 0, yOffset: 0, scale: 1.0 };
+  }
+});
+
+  const handleCalibrationChange = (key, value) => {
+  if (typeof value !== "number" || isNaN(value)) return;
+  setCalibration((prev) => {
+    const updated = { ...prev, [key]: value };
+    try {
+      localStorage.setItem(
+        `voiceforge:calibration${key.charAt(0).toUpperCase() + key.slice(1)}`,
+        value.toString()
+      );
+    } catch { /* storage unavailable – continue without persisting */ }
+    return updated;
+  });
+};
+
+  const handleResetCalibration = () => {
+    const defaults = { xOffset: 0, yOffset: 0, scale: 1.0 };
+    setCalibration(defaults);
+    localStorage.setItem("voiceforge:calibrationXOffset", "0");
+    localStorage.setItem("voiceforge:calibrationYOffset", "0");
+    localStorage.setItem("voiceforge:calibrationScale", "1.0");
+  };
 
   React.useEffect(() => {
     let activeStream = null;
@@ -85,7 +126,107 @@ export default function Call() {
         </div>
       )}
 
-      {/* ── Three-column grid ──────────────────────────────────────────────── */}
+      {/* Mouth Calibration Drawer */}
+      <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-soft">
+        <button
+          id="toggle-calibration-btn"
+          type="button"
+          onClick={() => setIsCalibrationOpen(!isCalibrationOpen)}
+          className="flex w-full items-center justify-between font-bold text-ink"
+        >
+          <div className="flex items-center gap-2">
+            <Sliders size={18} className="text-moss" />
+            <h2 className="text-base font-bold">Mouth Calibration Settings</h2>
+          </div>
+          <ChevronDown
+            size={18}
+            className={`transition-transform duration-200 ${isCalibrationOpen ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+
+        {isCalibrationOpen && (
+          <div className="mt-4 border-t border-ink/10 pt-4">
+            <p className="text-sm text-ink/65 mb-4">
+              Calibrate the animated fallback mouth position and size overlay to align with your camera.
+            </p>
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label htmlFor="calibration-x-slider" className="text-sm font-bold text-ink">
+                    Horizontal Position (X Offset)
+                  </label>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-cloud border border-ink/10 text-moss">
+                    {calibration.xOffset > 0 ? `+${calibration.xOffset}` : calibration.xOffset}px
+                  </span>
+                </div>
+                <input
+                  id="calibration-x-slider"
+                  type="range"
+                  min="-400"
+                  max="400"
+                  step="1"
+                  value={calibration.xOffset}
+                  onChange={(e) => handleCalibrationChange("xOffset", parseInt(e.target.value, 10))}
+                  className="w-full h-2 rounded-lg bg-cloud border border-ink/10 appearance-none cursor-pointer accent-moss focus:outline-none"
+                />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label htmlFor="calibration-y-slider" className="text-sm font-bold text-ink">
+                    Vertical Position (Y Offset)
+                  </label>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-cloud border border-ink/10 text-moss">
+                    {calibration.yOffset > 0 ? `+${calibration.yOffset}` : calibration.yOffset}px
+                  </span>
+                </div>
+                <input
+                  id="calibration-y-slider"
+                  type="range"
+                  min="-250"
+                  max="150"
+                  step="1"
+                  value={calibration.yOffset}
+                  onChange={(e) => handleCalibrationChange("yOffset", parseInt(e.target.value, 10))}
+                  className="w-full h-2 rounded-lg bg-cloud border border-ink/10 appearance-none cursor-pointer accent-moss focus:outline-none"
+                />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label htmlFor="calibration-scale-slider" className="text-sm font-bold text-ink">
+                    Mouth Size (Scale)
+                  </label>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-cloud border border-ink/10 text-moss">
+                    {calibration.scale.toFixed(1)}x
+                  </span>
+                </div>
+                <input
+                  id="calibration-scale-slider"
+                  type="range"
+                  min="0.5"
+                  max="2.5"
+                  step="0.1"
+                  value={calibration.scale}
+                  onChange={(e) => handleCalibrationChange("scale", parseFloat(e.target.value))}
+                  className="w-full h-2 rounded-lg bg-cloud border border-ink/10 appearance-none cursor-pointer accent-moss focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                id="reset-calibration-btn"
+                type="button"
+                onClick={handleResetCalibration}
+                className="inline-flex items-center justify-center gap-1.5 rounded-md border border-coral/40 px-3 py-1.5 text-xs font-bold text-coral hover:bg-coral hover:text-white transition"
+              >
+                <RotateCcw size={14} aria-hidden="true" />
+                Reset to Defaults
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr_0.9fr]">
         {/* Webcam panel */}
         <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-soft dark:border-border dark:bg-surface dark:shadow-soft-dk">
@@ -125,6 +266,8 @@ export default function Call() {
           webcamStream={webcamStream}
           audioUrl={audioUrl}
           isSpeaking={isSpeaking || status === "speaking"}
+          calibration={calibration}
+          isCalibrating={isCalibrationOpen}
         />
       </div>
 
