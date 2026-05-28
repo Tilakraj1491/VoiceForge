@@ -24,8 +24,9 @@ export default function Call() {
       try {
         const profile = await getActiveVoiceProfile();
         setActiveProfile(profile);
+        setDbError("");
       } catch (err) {
-        setDbError(err.message);
+        setDbError(err?.message || String(err));
       }
     }
     loadActiveProfile();
@@ -91,8 +92,9 @@ export default function Call() {
         activeStream = stream;
         setWebcamStream(stream);
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        setCameraError("");
       } catch (webcamError) {
-        setCameraError(webcamError.message);
+        setCameraError(webcamError?.message || String(webcamError));
       }
     }
     openCamera();

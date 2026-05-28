@@ -33,8 +33,9 @@ export default function Settings() {
       try {
         const saved = await getSavedProfiles();
         setProfiles(saved);
+        setDbError("");
       } catch (err) {
-        setDbError(err.message);
+        setDbError(err?.message || String(err));
       }
     }
     loadProfiles();
@@ -48,8 +49,9 @@ export default function Settings() {
     try {
       const next = await deleteVoiceProfile(voiceId);
       setProfiles(next);
+      setDbError("");
     } catch (err) {
-      setDbError(err.message);
+      setDbError(err?.message || String(err));
     }
   }
 

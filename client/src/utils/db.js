@@ -39,7 +39,7 @@ function getDB() {
       };
     } catch (err) {
       dbPromise = null;
-      reject(new Error("Failed to initialize IndexedDB: " + err.message));
+      reject(new Error("Failed to initialize IndexedDB: " + (err?.message || String(err))));
     }
   });
 

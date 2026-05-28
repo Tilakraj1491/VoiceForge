@@ -79,7 +79,7 @@ export default function useVoiceClone() {
       setStatus("success");
       return profile;
     } catch (cloneError) {
-      setError(cloneError.message);
+      setError(cloneError?.message || String(cloneError));
       setStatus("error");
       throw cloneError;
     }
