@@ -133,6 +133,8 @@ export default function Settings() {
                 <p className="mt-1 break-all text-sm text-ink/60 dark:text-muted">
                   {profile.voice_id}
                 </p>
+                {profile.audioBlob && <AudioPlayback blob={profile.audioBlob} />}
+  )}
               </div>
               <button
                 type="button"
