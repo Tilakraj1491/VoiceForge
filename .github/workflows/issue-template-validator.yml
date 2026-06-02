@@ -149,10 +149,17 @@ jobs:
             if (problems.length === 0) {
               const successBody =
                 `${marker}\n` +
-                `## Issue Received\n\n` +
+                `## Issue Intake Passed\n\n` +
                 `Hi @${username}, thank you for opening this issue with the correct template.\n\n` +
-                `Your issue is now in the maintainer review queue. A maintainer will check the scope, priority, and readiness, then assign it to a contributor when it is ready.\n\n` +
-                `Please wait for maintainer confirmation before starting work.`;
+                `Your issue has entered the maintainer review queue. The team will check scope, priority, labels, and readiness before assigning it to a contributor.\n\n` +
+                `| Check | Status |\n` +
+                `| --- | --- |\n` +
+                `| Program template | ${matchedProgram.name} detected |\n` +
+                `| Issue type | ${isBugTemplate ? 'Bug report' : 'Feature request'} |\n` +
+                `| Detail level | Ready for maintainer review |\n` +
+                `| Next step | Maintainer assignment |\n\n` +
+                `Please wait for maintainer confirmation before starting work. Assignment requests are welcome, but work should begin only after assignment.\n\n` +
+                `VoiceForge automation`;
 
               if (existing) {
                 await github.rest.issues.updateComment({
@@ -175,9 +182,18 @@ jobs:
             const commentBody =
               `${marker}\n` +
               `## Template Update Needed\n\n` +
-              `Hi @${username}, thanks for opening this issue. VoiceForge requires contributors to use the program issue templates.\n\n` +
+              `Hi @${username}, thank you for opening this issue.\n\n` +
+              `VoiceForge automation found a few items that need correction before maintainers can review and assign this issue.\n\n` +
+              `### What Needs Attention\n\n` +
               problems.map(problem => `- ${problem}`).join('\n') +
-              `\n\nPlease edit this issue using the correct template. This comment updates automatically after the issue is fixed.`;
+              `\n\n` +
+              `### How To Fix\n\n` +
+              `| Area | Correction |\n` +
+              `| --- | --- |\n` +
+              `${templateProblems.length > 0 ? '| Template | Use one complete program issue template: GSSoC, NSOC, SSOC, or ELUSOC. |\n' : ''}` +
+              `${qualityProblems.length > 0 ? '| Details | Add clear context, expected behavior, screenshots/logs if useful, and enough steps for maintainers to understand the request. |\n' : ''}` +
+              `\nAfter editing the issue, this comment will update automatically.\n\n` +
+              `VoiceForge automation`;
 
             if (existing) {
               await github.rest.issues.updateComment({

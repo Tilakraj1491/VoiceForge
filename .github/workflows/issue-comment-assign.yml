@@ -70,7 +70,7 @@ jobs:
                 owner,
                 repo,
                 issue_number,
-                body: `Hi @${username}, thank you for your interest.\n\nThis issue is currently assigned to ${assigned}. Please do not start work on it unless a maintainer reassigns it.\n\nIf there is no progress or response from the assigned contributor within the expected time, maintainers may reopen the assignment queue. Until then, please look for another open issue where your contribution can move faster.`
+                body: `## Assignment Already Active\n\nHi @${username}, thank you for your interest in this issue.\n\nThis issue is currently assigned to ${assigned}. Please do not start work on it unless a maintainer reassigns it to you.\n\n| Status | Details |\n| --- | --- |\n| Current assignee | ${assigned} |\n| Your request | Noted, but waiting |\n| Best next step | Explore another open issue for now |\n\nIf there is no progress or response from the assigned contributor within the expected time, maintainers may reopen the assignment queue.\n\nVoiceForge automation`
               });
               return;
             }
@@ -79,5 +79,5 @@ jobs:
               owner,
               repo,
               issue_number,
-              body: `Hi @${username}, thank you for wanting to work on this issue.\n\nYour assignment request has been noted. A maintainer will review the issue scope and assign it when it is ready.\n\nPlease wait for maintainer approval before starting work. In the meantime, feel free to explore other open issues too.`
+              body: `## Assignment Request Received\n\nHi @${username}, thank you for wanting to work on this issue.\n\nYour request has been noted. A maintainer will review the issue scope, priority, and readiness before assigning it.\n\n| Status | Details |\n| --- | --- |\n| Request | Received |\n| Assignment | Pending maintainer review |\n| Before starting | Please wait for maintainer approval |\n\nIn the meantime, feel free to explore other open issues too.\n\nVoiceForge automation`
             });
