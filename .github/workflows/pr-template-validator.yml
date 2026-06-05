@@ -225,14 +225,29 @@ jobs:
             ];
 
             const programLabels = programs.map(program => program.label);
-            const matchedPrograms = programs.filter(program =>
-              program.patterns.some(pattern => pattern.test(body))
-            );
-            const matchedProgram = matchedPrograms.length === 1 ? matchedPrograms[0] : null;
             function hasHeading(name) {
               const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
               return new RegExp(`^\\s*#{1,6}\\s*.*${escapedName}\\b`, 'im').test(body);
             }
+            function getHeadingSection(name) {
+              const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const sectionMatch = body.match(new RegExp(`^\\s*#{1,6}\\s*.*${escapedName}\\b.*$`, 'im'));
+              if (!sectionMatch || typeof sectionMatch.index !== 'number') return '';
+
+              const sectionStart = sectionMatch.index + sectionMatch[0].length;
+              const nextHeadingMatch = body.slice(sectionStart).match(/^\\s*#{1,6}\\s+.+$/m);
+              const sectionEnd = nextHeadingMatch && typeof nextHeadingMatch.index === 'number'
+                ? sectionStart + nextHeadingMatch.index
+                : body.length;
+
+              return body.slice(sectionStart, sectionEnd).replace(/<!--[\s\S]*?-->/g, '').trim();
+            }
+
+            const programSection = getHeadingSection('Program');
+            const matchedPrograms = programs.filter(program =>
+              program.patterns.some(pattern => pattern.test(programSection))
+            );
+            const matchedProgram = matchedPrograms.length === 1 ? matchedPrograms[0] : null;
 
             const requiredSections = ['Program', 'Description', 'Related Issue', 'Type of Change', 'How to Test', 'Checklist'];
             const linkedIssueRegex = /\b(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)/gi;
