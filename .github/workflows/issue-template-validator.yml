@@ -291,7 +291,7 @@ jobs:
                   `A maintainer will evaluate scope and apply: \`go ahead\` · \`duplicate\` · \`not needed\` · \`out of scope\`.\n` +
                   `🙋 You'll be notified when it's open to claim. ⚠️ Please wait for an explicit assignment before starting work.\n\n` +
                   `---\n` +
-                  `<sub>🤖 VoiceForge Automation · issue-template-validator · <em>Updates automatically on edits</em></sub>`;
+                  `<sub>🤖 VoiceForge Automation · <em>Updates automatically on edits</em></sub>`;
               }
 
               if (existing) {
@@ -342,7 +342,7 @@ jobs:
               `**To revalidate:** edit the issue body → save. This comment updates automatically ✅\n` +
               `> 💡 Need a template? Close this and open a new issue using **Bug Report** or **Feature Request** from the issue picker.\n\n` +
               `---\n` +
-              `<sub>🤖 VoiceForge Automation · issue-template-validator · <em>Updates automatically on edits</em></sub>`;
+              `<sub>🤖 VoiceForge Automation · <em>Updates automatically on edits</em></sub>`;
 
             if (existing) {
               await github.rest.issues.updateComment({
