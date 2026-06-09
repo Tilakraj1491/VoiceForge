@@ -1,59 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Settings2, ChevronDown, ChevronUp } from "lucide-react";
-
-const STORAGE_KEY = "voiceforge:voiceSettings";
-
-const DEFAULT_SETTINGS = {
-  stability: 0.45,
-  similarity_boost: 0.8,
-  style: 0.2,
-};
-
-/**
- * Reads voice settings from localStorage, sanitizing each value against its
- * default type so callers never receive wrong types (e.g. string reaching
- * a slider's value prop or parseFloat producing NaN on initial render).
- */
-function loadSettings() {
-  let parsed = {};
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) parsed = JSON.parse(raw);
-  } catch {
-    // Malformed JSON — fall back to defaults for all keys.
-  }
-
-  const result = {};
-  for (const [key, defaultVal] of Object.entries(DEFAULT_SETTINGS)) {
-    if (typeof defaultVal === "number") {
-      const coerced = parsed[key] == null ? NaN : Number(parsed[key]);
-      if (Number.isNaN(coerced)) {
-        result[key] = defaultVal;
-      } else if (defaultVal >= 0 && defaultVal <= 1) {
-        // Slider range: clamp to [0, 1].
-        result[key] = Math.min(1, Math.max(0, coerced));
-      } else {
-        result[key] = coerced;
-      }
-    } else if (typeof defaultVal === "boolean") {
-      result[key] = typeof parsed[key] === "boolean" ? parsed[key] : defaultVal;
-    } else {
-      result[key] = typeof parsed[key] === typeof defaultVal ? parsed[key] : defaultVal;
-    }
-  }
-  return result;
-}
-
-/**
- * Persists voice settings to localStorage.
- */
-function persistSettings(settings) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // Storage unavailable — fail silently
-  }
-}
+import {
+  loadVoiceSettings,
+  persistVoiceSettings,
+} from "../utils/voiceSettings.js";
 
 /**
  * A single labelled range slider row.
