@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Settings2, ChevronDown, ChevronUp } from "lucide-react";
 import {
+  VOICE_SETTINGS_KEY,
   loadVoiceSettings,
   persistVoiceSettings,
 } from "../utils/voiceSettings.js";
@@ -57,13 +58,13 @@ function SliderRow({ id, label, description, value, onChange }) {
  */
 export function VoiceQuickSettings({ defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [settings, setSettings] = useState(loadSettings);
+  const [settings, setSettings] = useState(loadVoiceSettings);
 
   // Keep in sync when the Settings page changes localStorage from another tab/component.
   useEffect(() => {
     function handleStorage(event) {
-      if (event.key === STORAGE_KEY) {
-        setSettings(loadSettings());
+      if (event.key === VOICE_SETTINGS_KEY) {
+        setSettings(loadVoiceSettings());
       }
     }
     window.addEventListener("storage", handleStorage);
@@ -75,7 +76,7 @@ export function VoiceQuickSettings({ defaultOpen = false }) {
       const val = parseFloat(event.target.value);
       setSettings((prev) => {
         const next = { ...prev, [key]: val };
-        persistSettings(next);
+        persistVoiceSettings(next);
         return next;
       });
     },

@@ -1,6 +1,11 @@
 // Lets users save their ElevenLabs API key for the current session and manage browser-stored voice profiles.
 import React from "react";
 import { getApiKey, setApiKey, migrateFromLocalStorage } from "../utils/apiKeyStorage.js";
+import {
+  DEFAULT_VOICE_SETTINGS,
+  loadVoiceSettings,
+  persistVoiceSettings,
+} from "../utils/voiceSettings.js";
 
 import { ExternalLink, Trash2, CircleAlert } from "lucide-react";
 import {
@@ -63,26 +68,8 @@ export default function Settings() {
   }, []);
 
 
-  const defaultSettings = { stability: 0.45, similarity_boost: 0.8, style: 0.2 };
-  const [voiceSettings, setVoiceSettings] = React.useState(() => {
-    let parsed = {};
-    try {
-      const raw = localStorage.getItem("voiceforge:voiceSettings");
-      if (raw) parsed = JSON.parse(raw);
-    } catch {
-      // Malformed JSON — fall back to defaults for all keys.
-    }
-    // Sanitize each field against its default type so slider value props
-    // never receive strings, null, or out-of-range numbers.
-    const result = {};
-    for (const [key, defaultVal] of Object.entries(defaultSettings)) {
-      const coerced = parsed[key] == null ? NaN : Number(parsed[key]);
-      result[key] = Number.isNaN(coerced)
-        ? defaultVal
-        : Math.min(1, Math.max(0, coerced));
-    }
-    return result;
-  });
+  const defaultSettings = DEFAULT_VOICE_SETTINGS;
+  const [voiceSettings, setVoiceSettings] = React.useState(loadVoiceSettings);
 
   function saveApiKey() {
     setApiKey(apiKey);
@@ -92,11 +79,7 @@ export default function Settings() {
 
   function saveVoiceSettings(newSettings) {
     setVoiceSettings(newSettings);
-    try {
-      localStorage.setItem("voiceforge:voiceSettings", JSON.stringify(newSettings));
-    } catch {
-      // Storage unavailable
-    }
+    persistVoiceSettings(newSettings);
   }
 
   async function removeProfile(voiceId) {
